@@ -25,7 +25,7 @@
 <section id="marketing" class="page"><div class="head"><div><h1>العروض والتسويق</h1><small>إنشاء حملات حسب شرائح العملاء</small></div></div><div class="stats"><div class="card"><h3>VIP</h3><p class="muted">حملة خاصة بالعملاء المميزين</p></div><div class="card"><h3>غائب 20 يوماً</h3><p class="muted">شريحة لاستعادة العملاء</p></div><div class="card"><h3>غائب 30 يوماً</h3><p class="muted">حملة عودة مخصصة</p></div></div><button onclick="toast('معاينة فقط — لن يتم إرسال رسائل حقيقية')">معاينة حملة تجريبية</button></section>
 <section id="billing" class="page"><div class="head"><div><h1>الاشتراك والفوترة</h1><small>نموذج الاشتراك المركزي للمؤسسة</small></div></div><div class="card"><span class="tag">خطة تجريبية</span><h2>Business</h2><p>المحلات الإضافية والفروع الإضافية تظهر كبنود فوترة مستقلة.</p><p class="muted">لم يتم ربط بوابة دفع أو تحديد الأسعار النهائية بعد.</p></div></section>
 </div></main></div>
-<div class="modal" id="bookingModal"><div class="dialog"><h2>إضافة حجز</h2><div class="fields"><label>اسم الزبون<input id="bName" placeholder="الاسم الكامل"></label><label>الهاتف<input id="bPhone" placeholder="+90..."></label><label>الخدمة<select id="bService"><option>قص شعر</option><option>حلاقة ذقن</option><option>قص شعر + ذقن</option><option>عناية بالبشرة</option></select></label><label>الحلاق<select id="bBarber"><option>أحمد يلماز</option><option>محمد علي</option><option>كريم حسن</option><option>يوسف</option></select></label><label>التاريخ<input id="bDate" type="date"></label><label>الوقت<input id="bTime" type="time" value="16:00"></label><label class="wide">ملاحظة<input id="bNote" placeholder="اختياري"></label></div><div class="actions"><button class="primary" onclick="saveBooking()">حفظ الحجز</button><button onclick="hideBooking()">إغلاق</button></div></div></div><div id="toast" class="toast"></div>
+<div class="modal" id="bookingModal"><div class="dialog"><h2>إضافة حجز</h2><div class="fields"><label>اسم الزبون<input id="bName" placeholder="الاسم الكامل"></label><label>الهاتف<input id="bPhone" placeholder="+90..."></label><label>الفرع<select id="bBranch"></select></label><label>الخدمة<select id="bService"></select></label><label>التاريخ<input id="bDate" type="date"></label><label>الوقت<input id="bTime" type="time" value="16:00"></label><label class="wide">ملاحظة<input id="bNote" placeholder="اختياري"></label></div><div class="actions"><button class="primary" onclick="saveBooking()">حفظ الحجز</button><button onclick="hideBooking()">إغلاق</button></div></div></div><div id="toast" class="toast"></div>
 <script>
 const key='barber-ecosystem-beta-v02';
 const initial=[
@@ -84,6 +84,7 @@ async function loadWorkspaces(){
  list.innerHTML=workspaces.length?workspaces.map(o=>'<div style="padding:12px 0;border-bottom:1px solid #2a3949"><b>'+esc(o.name)+'</b> <small> · '+(o.ownership_type==='company'?'شركة':'ملكية فردية')+'</small>'+((o.shops||[]).map(s=>'<div style="margin:8px 15px;color:#b7c4d2">✂ '+esc(s.name)+((s.branches||[]).map(b=>'<div style="margin:5px 18px;color:#9aabba">↳ '+esc(b.name)+' — '+esc([b.city,b.country].filter(Boolean).join(', '))+'</div>').join(''))+'</div>').join(''))+'</div>').join(''):'لا توجد مؤسسة بعد. أنشئ أول مؤسسة من النموذج أعلاه.';
  const sel=document.getElementById('serviceBranch');sel.innerHTML=branches.map(b=>'<option value="'+b.id+'">'+esc(b.orgName)+' / '+esc(b.shopName)+' / '+esc(b.name)+'</option>').join('')||'<option value="">أنشئ مؤسسة وفرعاً أولاً</option>';
  await loadServices();
+ await loadAppointments();
 }
 async function loadServices(){
  const body=document.getElementById('realServices');if(!branches.length){body.innerHTML='<tr><td colspan="4">لا توجد فروع بعد.</td></tr>';return}
@@ -97,4 +98,46 @@ window.createService=async()=>{
  const {error}=await sb.from('services').insert({branch_id,name,duration_minutes,price,currency});msg.textContent=error?'تعذر الحفظ: '+error.message:'تم حفظ الخدمة بنجاح.';if(!error){document.getElementById('serviceName').value='';await loadServices()}
 };
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function statusLabel(s){return ({pending:'قيد الانتظار',confirmed:'مؤكد',completed:'مكتمل',cancelled:'ملغي',no_show:'لم يحضر'})[s]||s}
+function statusTag(s){return s==='pending'?'wait':s==='cancelled'?'off':''}
+async function loadAppointments(){
+ const ids=branches.map(b=>b.id);if(!ids.length)return;
+ const {data,error}=await sb.from('appointments').select('id,starts_at,ends_at,status,customer:customers(display_name,phone),service:services(name),branch:branches(name)').in('branch_id',ids).order('starts_at',{ascending:true}).limit(100);
+ if(error){console.warn('Appointments load:',error.message);return}
+ const rows=(data||[]).map(a=>({id:a.id,name:a.customer?.display_name||'—',phone:a.customer?.phone||'—',service:a.service?.name||'—',barber:'—',date:new Date(a.starts_at).toLocaleDateString('en-CA'),time:new Date(a.starts_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),status:a.status}));
+ const body=document.getElementById('bookingRows');
+ body.innerHTML=rows.map(a=>'<tr><td>'+esc(a.name)+'</td><td>'+esc(a.phone)+'</td><td>'+esc(a.service)+'</td><td>—</td><td>'+esc(a.date)+'</td><td>'+esc(a.time)+'</td><td><span class="tag '+statusTag(a.status)+'">'+statusLabel(a.status)+'</span></td><td><select onchange="changeStatus(\''+a.id+'\',this.value)"><option value="">تغيير</option><option value="confirmed">مؤكد</option><option value="completed">مكتمل</option><option value="cancelled">ملغي</option><option value="no_show">لم يحضر</option></select></td></tr>').join('')||'<tr><td colspan="8">لا توجد حجوزات مسجلة</td></tr>';
+ document.getElementById('nextRows').innerHTML=rows.slice(0,5).map(a=>'<tr><td>'+esc(a.name)+'</td><td>'+esc(a.service)+'</td><td>—</td><td>'+esc(a.time)+'</td><td>'+statusLabel(a.status)+'</td></tr>').join('')||'<tr><td colspan="5">لا توجد حجوزات قادمة</td></tr>';
+ document.getElementById('countBookings').textContent=rows.filter(a=>a.date===new Date().toLocaleDateString('en-CA')).length;
+ const {count}=await sb.from('customers').select('id',{count:'exact',head:true}).in('branch_id',ids);document.getElementById('countClients').textContent=count??0;
+ const bsel=document.getElementById('bBranch');bsel.innerHTML=branches.map(b=>'<option value="'+b.id+'">'+esc(b.orgName)+' / '+esc(b.shopName)+' / '+esc(b.name)+'</option>').join('');
+ updateBookingServices();
+}
+function updateBookingServices(){
+ const branchId=document.getElementById('bBranch').value;
+ const opts=services.filter(s=>s.branch_id===branchId);
+ document.getElementById('bService').innerHTML=opts.map(s=>'<option value="'+s.id+'">'+esc(s.name)+' — '+Number(s.price).toFixed(2)+' '+esc(s.currency)+'</option>').join('')||'<option value="">لا توجد خدمات لهذا الفرع</option>';
+}
+document.getElementById('bBranch').addEventListener('change',updateBookingServices);
+window.showBooking=async()=>{if(!branches.length){toast('أنشئ مؤسسة وفرعاً أولاً');go('org');return}await loadServices();const d=document.getElementById('bDate');d.value=new Date().toLocaleDateString('en-CA');document.getElementById('bookingModal').classList.add('show');};
+window.saveBooking=async()=>{
+ const branch_id=document.getElementById('bBranch').value,service_id=document.getElementById('bService').value;
+ const name=document.getElementById('bName').value.trim(),phone=document.getElementById('bPhone').value.trim();
+ const date=document.getElementById('bDate').value,time=document.getElementById('bTime').value;
+ if(!branch_id||!service_id||!name||!date||!time){toast('أكمل بيانات الحجز واختر خدمة');return}
+ try{
+  let {data:customer,error:e1}=await sb.from('customers').select('id').eq('branch_id',branch_id).eq('phone',phone).maybeSingle();
+  if(e1)throw e1;
+  if(!customer){const r=await sb.from('customers').insert({branch_id,display_name:name,phone:phone||null}).select('id').single();if(r.error)throw r.error;customer=r.data}
+  const {data:service,error:e2}=await sb.from('services').select('duration_minutes').eq('id',service_id).single();if(e2)throw e2;
+  const start=new Date(date+'T'+time+':00');const end=new Date(start.getTime()+service.duration_minutes*60000);
+  const {error:e3}=await sb.from('appointments').insert({branch_id,customer_id:customer.id,service_id,starts_at:start.toISOString(),ends_at:end.toISOString(),status:'confirmed'});
+  if(e3)throw e3;
+  hideBooking();document.getElementById('bName').value='';document.getElementById('bPhone').value='';await loadAppointments();toast('تم حفظ الحجز في قاعدة البيانات');
+ }catch(e){toast(e.message.includes('appointments_one_active_per_customer')?'لدى هذا الزبون حجز نشط بالفعل':e.message.includes('appointments_no_barber_overlap')?'الحلاق لديه حجز متداخل':'تعذر حفظ الحجز: '+e.message);console.error(e)}
+};
+window.changeStatus=async(id,status)=>{
+ if(!status)return;const {error}=await sb.from('appointments').update({status,cancelled_at:status==='cancelled'?new Date().toISOString():null,cancelled_by:status==='cancelled'?session.user.id:null}).eq('id',id);
+ if(error){toast('تعذر تحديث الحجز: '+error.message);return}await loadAppointments();toast('تم تحديث حالة الحجز');
+};
 </script></body></html>
