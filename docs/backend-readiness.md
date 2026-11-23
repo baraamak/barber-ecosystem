@@ -17,3 +17,19 @@ Before database provisioning, select the Supabase organization and review any qu
 - Add subscription capacity checks before activating additional shops/branches.
 - Validate ownership percentages total 100% before marking company ownership as verified.
 - Add invitation lifecycle, phone/email verification workflow, audit log, notifications, campaign consent and unsubscribe handling.
+
+
+## Supabase project provisioned and schema applied
+- Dedicated project: `barber-ecosystem` (region `ap-southeast-1`, PostgreSQL 17).
+- Project reference: `lhgkplxlupbmlmuaqykt`.
+- Applied migrations: initial schema, membership RLS hardening, booking integrity/indexes, extension schema fix, profile account type.
+- Confirmed 17 public tables with RLS enabled.
+- Confirmed booking constraints: one active appointment per customer and no overlapping active appointments for the same barber.
+- Security advisor returned no findings after moving `btree_gist` into `extensions`.
+- Email/password registration and login are now present in `auth.html`; the dashboard redirects unauthenticated visitors to it.
+
+## Current beta limitations
+- The dashboard's operational lists and booking form still use browser-local demo data; they are not yet reading/writing Supabase tables.
+- Account creation supports email/password only. SMS verification, phone-based login, role invitations, organization provisioning and server-side membership management are not implemented yet.
+- The current RLS policy set is an initial beta baseline. Before real customer data or public launch, complete an end-to-end role matrix test and replace any manager workflows requiring roster visibility with trusted server-side operations.
+- GitHub Pages deployment workflow is committed; deployment URL and workflow success must still be verified in repository Actions/Pages settings.
