@@ -119,12 +119,12 @@ function updateBookingServices(){
  document.getElementById('bService').innerHTML=opts.map(s=>'<option value="'+s.id+'">'+esc(s.name)+' — '+Number(s.price).toFixed(2)+' '+esc(s.currency)+'</option>').join('')||'<option value="">لا توجد خدمات لهذا الفرع</option>';
 }
 document.getElementById('bBranch').addEventListener('change',updateBookingServices);
-window.showBooking=async()=>{if(!branches.length){toast('أنشئ مؤسسة وفرعاً أولاً');go('org');return}await loadServices();const d=document.getElementById('bDate');d.value=new Date().toLocaleDateString('en-CA');document.getElementById('bookingModal').classList.add('show');};
+window.showBooking=async()=>{if(!branches.length){toast('أنشئ مؤسسة وفرعاً أولاً');go('org');return}await loadServices();updateBookingServices();const d=document.getElementById('bDate');d.value=new Date().toLocaleDateString('en-CA');document.getElementById('bookingModal').classList.add('show');};
 window.saveBooking=async()=>{
  const branch_id=document.getElementById('bBranch').value,service_id=document.getElementById('bService').value;
  const name=document.getElementById('bName').value.trim(),phone=document.getElementById('bPhone').value.trim();
  const date=document.getElementById('bDate').value,time=document.getElementById('bTime').value;
- if(!branch_id||!service_id||!name||!date||!time){toast('أكمل بيانات الحجز واختر خدمة');return}
+ if(!branch_id||!service_id||!name||!phone||!date||!time){toast('أكمل الاسم ورقم الهاتف والفرع والخدمة والموعد');return}
  try{
   let {data:customer,error:e1}=await sb.from('customers').select('id').eq('branch_id',branch_id).eq('phone',phone).maybeSingle();
   if(e1)throw e1;
