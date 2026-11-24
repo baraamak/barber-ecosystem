@@ -46,7 +46,7 @@ const names={home:'لوحة التحكم',bookings:'الحجوزات',clients:'�
 function go(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));document.getElementById('pageTitle').textContent=names[id]}
 document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 document.getElementById('clientRows').innerHTML=clients.map(c=>'<tr>'+c.map(v=>'<td>'+esc(v)+'</td>').join('')+'</tr>').join('');
-render();if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+render();
 </script><script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 const sb=createClient('https://lhgkplxlupbmlmuaqykt.supabase.co','sb_publishable_xOhFBYhtDb48uyxH9YmoCQ_ZdX71t_m');
