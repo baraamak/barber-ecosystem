@@ -1,0 +1,29 @@
+{
+  "name": "barber-ecosystem",
+  "version": "0.6.0",
+  "description": "منصة متكاملة لإدارة وتشغيل محلات الحلاقة، الحجوزات، الحلاقين، العملاء، الفروع، الاشتراكات والخدمات المرتبطة بها.",
+  "scripts": {
+    "mobile:sync": "node scripts/mobile.mjs && cap sync"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baraamak/barber-ecosystem.git"
+  },
+  "author": "",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/baraamak/barber-ecosystem/issues"
+  },
+  "homepage": "https://github.com/baraamak/barber-ecosystem#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.6.3",
+    "@capacitor/core": "^8.6.3",
+    "@capacitor/ios": "^8.6.3",
+    "@supabase/supabase-js": "^2.49.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.3",
+    "esbuild": "^0.28.2"
+  },
+  "private": true
+}
