@@ -1,0 +1,21 @@
+:root{color-scheme:dark;--bg:#121311;--panel:#20211d;--line:#3c3c34;--muted:#b4b3a7;--gold:#e2bf83}
+body{background:var(--bg);color:#f6f2e8;line-height:1.55}
+.brand{letter-spacing:.12em;color:var(--gold)}
+.panel,.card,.dialog{background:var(--panel);border-color:var(--line)}
+.panel{border-top:3px solid var(--gold);box-shadow:0 20px 80px #0005;padding:clamp(20px,5vw,38px)}
+.top,.side{background:#191a17}.top{gap:10px;height:auto;min-height:64px;flex-wrap:wrap}
+input,select{background:#141512;border-color:#505046;font-size:16px}
+button,select,input{min-height:44px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+nav button.active,.tabs button.active{background:#373326;color:#f6dfac}
+.dialog{max-height:85dvh;overflow:auto}
+.agenda-card{border-inline-start:3px solid var(--gold);padding:14px;margin-block:12px}
+.agenda-card h3,.agenda-card p{margin:4px 0}
+@media(max-width:850px){.side{position:sticky;top:0;z-index:2;padding-top:max(10px,env(safe-area-inset-top))}nav button{min-height:44px}.top span{overflow-wrap:anywhere}.content{padding-bottom:max(24px,env(safe-area-inset-bottom))}}
+.side,.card,.grid2,.stats,.content,.layout{min-width:0}
+.stat{border-top:2px solid #746344}.stat b{font-variant-numeric:tabular-nums;color:#f2dec0}
+button.primary{background:#e3c388;color:#191811}
+body:has(.panel){background:radial-gradient(ellipse at 20% 10%,#383324 0,transparent 48%),#131410;padding-block:24px}
+.panel h2{font-size:1.8rem;margin-block:0 6px}.panel .tabs{border-block-end:1px solid var(--line);padding-block:10px}
+.panel .tabs button{flex:1}.panel input:focus,.panel select:focus{border-color:var(--gold)}
+@media(max-width:850px){.layout,.grid2{grid-template-columns:minmax(0,1fr)}.side nav{max-width:100%}.card.scroll,.scroll{max-width:100%;overflow-x:auto}}
