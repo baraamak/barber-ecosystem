@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Barber Ecosystem</string>
+    <string name="title_activity_main">Barber Ecosystem</string>
+    <string name="package_name">com.baraamak.barberecosystem</string>
+    <string name="custom_url_scheme">com.baraamak.barberecosystem</string>
+</resources>
